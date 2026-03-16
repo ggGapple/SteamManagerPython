@@ -1,6 +1,7 @@
 import requests
 import json
 from config import apiKey, mySteamName
+import os
 
 def get_player_summary(steamid):
     url = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/"
@@ -52,24 +53,36 @@ def add(game_data, name, playtime):
 
 def edit(game_data, name, playtime):
     for game in game_data:
-        if game["name"] == name:
+        if game["name"].lower() == name.lower():
             game["playtime_forever"] = playtime
             print("Edited " + name + " in data, run write to upload")
             break
     print("Could not find " + name + " in data")
 
 def remove(game_data, name):
-    game_data = [g for g in game_data if g["name"] != name]
+    game_data[:] = [g for g in game_data if g["name"].lower() != name.lower()]
     print("Removed " + name + " from data, run write to upload")
+
+def find(game_data, name):
+    for game in game_data:
+        if game["name"].lower() == name.lower():
+            return True
+    return False
 
 games = []
 mySteamId = get_id_from_name(mySteamName)
 print("SteamManager v0.1\nType 'help' for a list of commands")
 if mySteamId is None:
-   print("\nWarning: No Steam ID was assigned. Check config.json or make one with 'config' command")
+   print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
+if os.path.exists("games.json"):
+    with open("games.json", "r") as f:
+        games = json.load(f)
+        print("Games retrieved from games.json")
+else:
+    print("Warning: no data retrieved from games.json. Try uploading data with 'write' command after running 'getData'")
 while True:
     command = input("-")
-    if command == "help":
+    if command.lower() == "help":
         print("Commands: \n>config: creates a config file based on given Steam key and ID\n"+
               ">getData: read all of the Steam data to a memory\n"+
               ">write: writes the data to a file (resets the file)\n"+
@@ -78,35 +91,53 @@ while True:
               ">remove: removes a game from the data\n"+
               ">edit: edits a game\n"+
               ">help: prints a list of commands")
-    elif command == "getData":
+    elif command.lower() == "getdata" or command.lower() == "get data":
         games = get_data()
-    elif command == "write":
+    elif command.lower() == "write":
         write()
-    elif command == "display":
+    elif command.lower() == "display":
         display(games)
-    elif command == "remove":
+    elif command.lower() == "remove":
         removeWhat = input("Type the name of the game to remove: ")
+        if not find(games, removeWhat):
+            print("Couldn't find " + removeWhat + " in local game data in memory")
+            continue
         remove(games, removeWhat)
-    elif command == "edit":
-        editWhat = input("Type the name of the game to add: ")
+    elif command.lower() == "edit":
+        editWhat = input("Type the name of the game to edit: ")
+        if not find(games, editWhat):
+            print("Couldn't find " + editWhat + " in local game data in memory")
+            continue
         whatPlaytime = input("Would you like to input playtime? Type 'm' for playtime in minutes, 'h' for"+
                              " playtime in hours, or 'n' for no playtime: ")
-        if whatPlaytime == "m":
+        if whatPlaytime.lower() == "m":
             whatPlaytime = input("Type playtime in minutes: ")
-        elif whatPlaytime == "h":
+        elif whatPlaytime.lower() == "h":
             whatPlaytime = input("Type playtime in hours: ")
             whatPlaytime *= 60
         else:
             whatPlaytime = 0
         edit(games, whatPlaytime, whatPlaytime)
-    elif command == "config":
+    elif command.lower() == "add":
+        addWhat = input("Type the name of the game to add: ")
+        whatPlaytime = input("Would you like to input playtime? Type 'm' for playtime in minutes, 'h' for"+
+                             " playtime in hours, or 'n' for no playtime: ")
+        if whatPlaytime.lower() == "m":
+            whatPlaytime = input("Type playtime in minutes: ")
+        elif whatPlaytime.lower() == "h":
+            whatPlaytime = input("Type playtime in hours: ")
+            whatPlaytime *= 60
+        else:
+            whatPlaytime = 0
+        add(games, whatPlaytime, whatPlaytime)
+    elif command.lower() == "config":
         apiKey = input("Type your API Key (obtainable here: https://steamcommunity.com/dev/apikey): ")
         keyOrName = input("Do you have a vanity Steam ID? That is, when you view your profile on a browser, "
                           +"in the url is it .com/id/<some number> or .com/id/<some String>? Type 'id' if it's "+
                           "a number, or 'name' if it's a String: ")
-        if keyOrName == "id":
+        if keyOrName.lower() == "id":
             steamid = input("Type your SteamID: ")
-        elif keyOrName == "name":
+        elif keyOrName.lower() == "name":
             steamid = get_id_from_name(input("Type your Steam vanity name: "))
     else:
         print("Sorry, that's not a recognized command")
