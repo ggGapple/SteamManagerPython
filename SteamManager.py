@@ -164,9 +164,17 @@ while True:
                              " playtime in hours. Otherwise, the operation will be cancelled: ")
         if whatPlaytime.lower() == "m":
             whatPlaytime = input("Type playtime in minutes: ")
+            try:
+                whatPlaytime = str(float(whatPlaytime))
+            except ValueError:
+                print("Sorry, that's not a number")
         elif whatPlaytime.lower() == "h":
             whatPlaytime = input("Type playtime in hours: ")
-            whatPlaytime *= 60
+            try:
+                whatPlaytime = float(whatPlaytime)
+            except ValueError:
+                print("Sorry, that's not a number")
+            whatPlaytime = str(whatPlaytime*60)
         else:
             continue
         edit_playtime(games, editWhat, whatPlaytime)
@@ -178,7 +186,7 @@ while True:
             whatPlaytime = input("Type playtime in minutes: ")
         elif whatPlaytime.lower() == "h":
             whatPlaytime = input("Type playtime in hours: ")
-            whatPlaytime =str(int(whatPlaytime)*60)
+            whatPlaytime =str(float(whatPlaytime)*60)
         else:
             whatPlaytime = 0
         add(games, addWhat, whatPlaytime)
