@@ -32,12 +32,16 @@ def get_games(steamid):
 def get_data():
     game_data = get_games(steamid=mySteamId)
     game_data.sort(key=lambda game: game["playtime_forever"], reverse = True)
+    initialize_ratings(game_data)
     print("Data obtained")
     return game_data
 
 def display(game_data):
     for game in game_data:
-        print(game["name"], "-", game["playtime_forever"], "mins")
+        if game["rating"] == -1:
+            print(f"{BOLD}{game["name"]}:{RESET} {game["playtime_forever"]} mins playtime, unrated")
+        else:
+            print(f"{BOLD}{game["name"]}:{RESET} {game["playtime_forever"]} mins playtime, rated {game["rating"]} out of 10")
 
 def write():
     if not games:
@@ -51,11 +55,19 @@ def add(game_data, name, playtime):
     game_data.append({"name": name, "playtime_forever": playtime, "appid": None})
     print("Added " + name + " to data, run write to upload")
 
-def edit(game_data, name, playtime):
+def edit_playtime(game_data, name, playtime):
     for game in game_data:
         if game["name"].lower() == name.lower():
             game["playtime_forever"] = playtime
             print("Edited " + name + " in data, run write to upload")
+            break
+    print("Could not find " + name + " in data")
+
+def edit_name(game_data, name, new_name):
+    for game in game_data:
+        if game["name"].lower() == name.lower():
+            game["name"] = new_name
+            print("Edited " + name + " to " + new_name + " in data, run write to upload")
             break
     print("Could not find " + name + " in data")
 
@@ -69,7 +81,20 @@ def find(game_data, name):
             return True
     return False
 
+def initialize_ratings(game_data):
+    for game in game_data:
+        game["rating"] = -1
+
+def rate(game_data, game_to_rate, rating):
+    for game in game_data:
+        if game["name"] == game_to_rate:
+            game["rating"] = rating
+            return
+
+
 games = []
+BOLD = "\033[1m"
+RESET = "\033[0m"
 mySteamId = get_id_from_name(mySteamName)
 print("SteamManager v0.1\nType 'help' for a list of commands")
 if mySteamId is None:
@@ -80,6 +105,8 @@ if os.path.exists("games.json"):
         print("Games retrieved from games.json")
 else:
     print("Warning: no data retrieved from games.json. Try uploading data with 'write' command after running 'getData'")
+
+
 while True:
     command = input("-")
     if command.lower() == "help":
@@ -89,7 +116,8 @@ while True:
               ">display: prints the data\n"+
               ">add: adds a game to the data\n"+
               ">remove: removes a game from the data\n"+
-              ">edit: edits a game\n"+
+              ">edit: edits a game's playtime or name\n"+
+              ">rate: allows you to add a rating for a game\n"+
               ">help: prints a list of commands")
     elif command.lower() == "getdata" or command.lower() == "get data":
         games = get_data()
@@ -104,20 +132,28 @@ while True:
             continue
         remove(games, removeWhat)
     elif command.lower() == "edit":
+        editMode = input("Would you like to edit a game's playtime or name? Type 'playtime' or 'name': ")
+        if editMode.lower() != "playtime" and editMode.lower() != "name":
+            print("Sorry, that's an unrecognized command")
+            continue
         editWhat = input("Type the name of the game to edit: ")
         if not find(games, editWhat):
             print("Couldn't find " + editWhat + " in local game data in memory")
             continue
-        whatPlaytime = input("Would you like to input playtime? Type 'm' for playtime in minutes, 'h' for"+
-                             " playtime in hours, or 'n' for no playtime: ")
+        if editMode.lower() == "name":
+            whatName = input("Type the new name for the game: ")
+            edit_name(games,editWhat,whatName)
+            continue
+        whatPlaytime = input("Type 'm' to input new playtime in minutes, or 'h' for"+
+                             " playtime in hours. Otherwise, the operation will be cancelled: ")
         if whatPlaytime.lower() == "m":
             whatPlaytime = input("Type playtime in minutes: ")
         elif whatPlaytime.lower() == "h":
             whatPlaytime = input("Type playtime in hours: ")
             whatPlaytime *= 60
         else:
-            whatPlaytime = 0
-        edit(games, whatPlaytime, whatPlaytime)
+            continue
+        edit_playtime(games, editWhat, whatPlaytime)
     elif command.lower() == "add":
         addWhat = input("Type the name of the game to add: ")
         whatPlaytime = input("Would you like to input playtime? Type 'm' for playtime in minutes, 'h' for"+
@@ -126,10 +162,10 @@ while True:
             whatPlaytime = input("Type playtime in minutes: ")
         elif whatPlaytime.lower() == "h":
             whatPlaytime = input("Type playtime in hours: ")
-            whatPlaytime *= 60
+            whatPlaytime =str(int(whatPlaytime)*60)
         else:
             whatPlaytime = 0
-        add(games, whatPlaytime, whatPlaytime)
+        add(games, addWhat, whatPlaytime)
     elif command.lower() == "config":
         apiKey = input("Type your API Key (obtainable here: https://steamcommunity.com/dev/apikey): ")
         keyOrName = input("Do you have a vanity Steam ID? That is, when you view your profile on a browser, "
