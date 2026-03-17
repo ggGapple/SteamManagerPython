@@ -68,7 +68,7 @@ def edit_name(game_data, name, new_name):
         if game["name"].lower() == name.lower():
             game["name"] = new_name
             print("Edited " + name + " to " + new_name + " in data, run write to upload")
-            break
+            return
     print("Could not find " + name + " in data")
 
 def remove(game_data, name):
@@ -91,6 +91,21 @@ def rate(game_data, game_to_rate, rating):
             game["rating"] = rating
             return
 
+def rate_all(game_data, ignore_already_rated = True):
+    for game in game_data:
+        if game["rating"] != -1 and ignore_already_rated:
+            continue
+        rating = input(f"Type a rating out of 10 for {game['name']}, 'none' to keep unrated, or 'q' to quit: ")
+        if rating == "none":
+            continue
+        elif rating == "q":
+            print("Saved previous ratings, stopping rating")
+            break
+        try:
+            rating = float(rating)
+            game["rating"] = rating
+        except ValueError:
+            print("Sorry, that's not a number. We'll move on but you can rate again later with the 'rate' command")
 
 games = []
 BOLD = "\033[1m"
@@ -106,7 +121,6 @@ if os.path.exists("games.json"):
 else:
     print("Warning: no data retrieved from games.json. Try uploading data with 'write' command after running 'getData'")
 
-
 while True:
     command = input("-")
     if command.lower() == "help":
@@ -118,7 +132,9 @@ while True:
               ">remove: removes a game from the data\n"+
               ">edit: edits a game's playtime or name\n"+
               ">rate: allows you to add a rating for a game\n"+
-              ">help: prints a list of commands")
+              ">rateAll: goes through all games in local memory and asks for a rating\n"+
+              ">help: prints a list of commands\n"+
+              ">quit: quits the program")
     elif command.lower() == "getdata" or command.lower() == "get data":
         games = get_data()
     elif command.lower() == "write":
@@ -175,5 +191,23 @@ while True:
             steamid = input("Type your SteamID: ")
         elif keyOrName.lower() == "name":
             steamid = get_id_from_name(input("Type your Steam vanity name: "))
+    elif command.lower() == "rate":
+        rateWhat = input("Type the name of the game to rate: ")
+        if not find(games, rateWhat):
+            print("Couldn't find " + rateWhat + " in local game data in memory")
+            continue
+        newRating = input("Type the new rating for the game: ")
+        rate(games,rateWhat,newRating)
+        print(f"Changed rating of {rateWhat} to {newRating}")
+    elif command.lower() == "rateall":
+        ignoreRating = input("Would you like to ignore already rated games? Type 'y' or 'n': ")
+        if ignoreRating.lower() == "y":
+            rate_all(games)
+        elif ignoreRating.lower() == "n":
+            rate_all(games,False)
+        else:
+            print("Sorry, that's not a unrecognized command")
+    elif command.lower() == "quit":
+        break
     else:
         print("Sorry, that's not a recognized command")
