@@ -66,3 +66,20 @@ def print_tags(game_data, game_name):
                 to_print += tag+", "
             print(to_print[0:-2])
             return
+    print("Could not find " + game_name + " in data")
+
+def print_games_of_tag(game_data, tag_name):
+    print("Printing games of " + tag_name)
+    for game in game_data:
+        if tag_name in game["tags"]:
+            print(game["name"])
+
+def print_all_tags(game_data):
+    print("Printing all tags")
+    tags = ""
+    tags_list = []
+    for game in game_data:
+        for tag in game["tags"]:
+            if tag not in tags_list:
+                tags_list.append(tag)
+                print(tag)

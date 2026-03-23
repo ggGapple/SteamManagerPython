@@ -57,14 +57,17 @@ while True:
 
     elif command.lower() == "tags":
         do_what = input("Do you want to update all tags from steam data (warning: can take a while), "
-                        +"add a tag to games, "
-                        +"or remove tags? Type 'update', 'add', or 'remove: ")
+                        +"add a tag to games, remove tags from games, or print certain games with certain tags?"
+                        +" Type 'update', 'add', 'remove', or 'print': ")
         if do_what.lower() == "update":
             update_tags(games, api_key, steam_id)
         elif do_what.lower() == "add":
-            what_game = input("What game would you like to add a tag to? ")
-            tag_name = input("What tag would you like to add to it? ")
-            add_tag(games,what_game,tag_name)
+            tag_name = input("What tag would you like to add? ")
+            for i in range(len(games)):
+                what_game = input("Type a game to add the tag to, or type 'stop' to quit: ")
+                if what_game.lower() == "stop":
+                    break
+                add_tag(games, what_game, tag_name)
         elif do_what.lower() == "remove":
             remove_how = input("Do you want to clear a game of all its tags, clear a tag from all games, "
                                +"or remove a specific tag from a specific game? " +
@@ -80,6 +83,20 @@ while True:
                 print_tags(games,what_game)
                 what_tag = input("What tag would you like to remove from "+what_game+"? ")
                 remove_tag_from_game(games,what_game,what_tag)
+            else:
+                print("Sorry, that's not a recognized command")
+        elif do_what.lower() == "print":
+            print_what = input("Do you want to print all all tags, all tags on a certain game, "
+                               +"or all the games with a certain tag? "
+                               +"Type 'all', 'game', or 'tags': ")
+            if print_what.lower() == 'game':
+                what_game = input("What game do you want to print all the tags on? ")
+                print_tags(games,what_game)
+            elif print_what.lower() == 'tags':
+                what_tag = input("What tag do you want to print all the games of? ")
+                print_games_of_tag(games, what_tag)
+            elif print_what.lower() == 'all':
+                print_all_tags(games)
             else:
                 print("Sorry, that's not a recognized command")
         else:
