@@ -64,8 +64,9 @@ def display(game_data):
             tags = tags[:-2]
         else:
             tags = ""
+        notes = ", notes: " + game['notes']
         print(f"{BOLD}{game["name"]}:{RESET} {game["playtime_forever"]} mins playtime, " + rating +
-              in_groups + tags)
+              in_groups + tags + notes)
 
 def write():
     if not games:
@@ -110,6 +111,7 @@ def initialize(game_data):
         game["rating"] = -1
         game["groups"] = []
         game['tags'] = []
+        game['notes'] = ""
 
 def rate(game_data, game_to_rate, rating):
     for game in game_data:
@@ -174,7 +176,12 @@ def print_members_of_group(group_name):
         for thing in item:
             print(thing)
 
-
+def add_notes(game_data, game_name, notes):
+    for game in game_data:
+        if game["name"] == game_name:
+            game["notes"] = notes
+            print("Updated " + game_name + " notes to " + notes)
+            return
 def get_player_achievements(app_id, api_key, steam_id):
     url = "https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/"
     params = {
@@ -225,7 +232,7 @@ groups = {}
 BOLD = "\033[1m"
 RESET = "\033[0m"
 mySteamId = get_id_from_name(mySteamName)
-print("SteamManager v0.2.1\nType 'help' for a list of commands")
+print("SteamManager v0.2.2\nType 'help' for a list of commands")
 if mySteamId is None:
    print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
 if os.path.exists("games.json"):
@@ -245,13 +252,13 @@ while True:
               ">display: prints the data\n"+
               ">add: adds a game to the data\n"+
               ">remove: removes a game from the data\n"+
-              ">edit: edits a game's playtime or name\n"+
+              ">edit: edits a game's playtime, name, or notes\n"+
               ">rate: allows you to add a rating for a game\n"+
               ">rateAll: goes through all games in local memory and asks for a rating\n"+
               ">group: allows you to create/delete/edit groups\n" +
               ">help: prints a list of commands\n"+
               ">updateTags: updates all of the tags ('played,' 'unplayed,' '100%' from Steam data." +
-              " Warning: due to Steam requests throttling, this could take a while \n"
+              " Warning: due to Steam requests throttling, this could take a while \n"+
               ">quit: quits the program")
     elif command.lower() == "getdatafromsteam":
         games = get_data()
@@ -270,8 +277,9 @@ while True:
             continue
         remove(games, removeWhat)
     elif command.lower() == "edit":
-        editMode = input("Would you like to edit a game's playtime or name? Type 'playtime' or 'name': ")
-        if editMode.lower() != "playtime" and editMode.lower() != "name":
+        editMode = input("Would you like to edit a game's playtime, name, or notes? "+
+                         "Type 'playtime', 'name', or 'notes': ")
+        if editMode.lower() != "playtime" and editMode.lower() != "name" and editMode.lower() != "notes":
             print("Sorry, that's an unrecognized command")
             continue
         editWhat = input("Type the name of the game to edit: ")
@@ -281,6 +289,10 @@ while True:
         if editMode.lower() == "name":
             whatName = input("Type the new name for the game: ")
             edit_name(games,editWhat,whatName)
+            continue
+        elif editMode.lower() == "notes":
+            whatNotes = input("Type the new notes for the game: ")
+            add_notes(games,editWhat,whatNotes)
             continue
         whatPlaytime = input("Type 'm' to input new playtime in minutes, or 'h' for"+
                              " playtime in hours. Otherwise, the operation will be cancelled: ")
