@@ -12,7 +12,7 @@ RESET = "\033[0m"
 games = []
 groups = {}
 steam_id = get_id_from_name(steam_name)
-print("SteamManager v0.3.2\nType 'help' for a list of commands")
+print("SteamManager v0.3.3\nType 'help' for a list of commands")
 if steam_id is None:
    print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
 if os.path.exists("games.json"):
@@ -64,8 +64,11 @@ while True:
         elif do_what.lower() == "add":
             tag_name = input("What tag would you like to add? ")
             for i in range(len(games)):
-                what_game = input("Type a game to add the tag to, or type 'stop' to quit: ")
-                if what_game.lower() == "stop":
+                what_game = input("Type a game to add the tag to, 'display' to display all games "
+                                  "or 'stop' to quit: ")
+                if what_game.lower() == "display":
+                    display(games)
+                elif what_game.lower() == "stop":
                     break
                 add_tag(games, what_game, tag_name)
         elif do_what.lower() == "remove":
@@ -234,23 +237,28 @@ while True:
                     print("Sorry, that's not one of the groups")
                 else:
                     for i in range(len(games)):
-                        gameToAdd = input("Type the name of a game to add or 'stop' to quit: ")
+                        gameToAdd = input("Type the name of a game to add, 'display' to display all games,"
+                                          +" or 'stop' to quit: ")
                         if gameToAdd.lower() == "stop":
                             skip = True
                             break
+                        elif gameToAdd.lower() == "display":
+                            display(games)
+                            continue
                         add_game_to_group(games,gameToAdd,groupName, groups)
             elif addOrRemove.lower() == "remove":
                 print("The current groups are: " + str(list(groups.keys())))
-                groupName = input("What group do you want to remove from? ")
-                if groupName not in groups:
+                group_name = input("What group do you want to remove from? ")
+                if group_name not in groups:
                     print("Sorry, that's not one of the groups")
                 else:
                     for i in range(len(games)):
+                        print_members_of_group(group_name,groups)
                         gameToRemove = input("Type the name of a game to remove or 'stop' to quit: ")
                         if gameToRemove.lower() == "stop":
                             skip = True
                             break
-                        del_game_from_group(games,gameToRemove,groupName, groups)
+                        del_game_from_group(games,gameToRemove,group_name, groups)
             else:
                 print("Sorry, that's not a recognized command")
             if skip:

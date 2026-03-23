@@ -76,7 +76,6 @@ def print_games_of_tag(game_data, tag_name):
 
 def print_all_tags(game_data):
     print("Printing all tags")
-    tags = ""
     tags_list = []
     for game in game_data:
         for tag in game["tags"]:
