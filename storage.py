@@ -13,8 +13,13 @@ def load_from_file():
     if os.path.exists("games.json"):
         with open("games.json", "r") as f:
             data = json.load(f)
-            games = data.get("games", [])
-            groups = data.get("groups", {})
+            if isinstance(data, list):
+                print("Old save format detected, groups will be empty")
+                games = data
+                groups = {}
+            else:
+                games = data.get("games", [])
+                groups = data.get("groups", {})
             for game in games:
                 game.setdefault("tags", [])
                 game.setdefault("notes", "")

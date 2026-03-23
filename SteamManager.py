@@ -12,7 +12,7 @@ RESET = "\033[0m"
 games = []
 groups = {}
 steam_id = get_id_from_name(steam_name)
-print("SteamManager v0.3\nType 'help' for a list of commands")
+print("SteamManager v0.3.1\nType 'help' for a list of commands")
 if steam_id is None:
    print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
 if os.path.exists("games.json"):
