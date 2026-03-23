@@ -12,7 +12,7 @@ RESET = "\033[0m"
 games = []
 groups = {}
 steam_id = get_id_from_name(steam_name)
-print("SteamManager v0.3.3\nType 'help' for a list of commands")
+print("SteamManager v0.3.4\nType 'help' for a list of commands")
 if steam_id is None:
    print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
 if os.path.exists("games.json"):
@@ -191,7 +191,8 @@ while True:
 
 
     elif command.lower() == "rate":
-        allOrOne = input("Would you like to rate all games at once or a single game? Type 'all' or 'one': ")
+        allOrOne = input("Would you like to rate all games at once, rate a single game, or print all games by rating? "
+                         +"Type 'all', 'one', or 'print': ")
         if allOrOne.lower() == "all":
             ignoreRating = input("Would you like to ignore already rated games? Type 'y' or 'n': ")
             if ignoreRating.lower() == "y":
@@ -205,9 +206,17 @@ while True:
             if not find(games, rateWhat):
                 print("Couldn't find " + rateWhat + " in local game data in memory")
                 continue
-            newRating = input("Type the new rating for the game: ")
+            newRating = input("Type the new rating for the game out of 10: ")
             rate(games, rateWhat, newRating)
             print(f"Changed rating of {rateWhat} to {newRating}")
+        elif allOrOne.lower() == "print":
+            min_rating = input("Do you want to ignore games below a certain rating? Type a number to be the minimum "
+                               "or 'n' to show games of all ratings: ")
+            try:
+                min_rating = float(min_rating)
+                print_by_rating(games, min_rating)
+            except ValueError:
+                print_by_rating(games)
         else:
             print("Sorry, that's not a recognized command")
 
