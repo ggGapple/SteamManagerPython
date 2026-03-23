@@ -1,3 +1,5 @@
+import time
+
 import requests
 import json
 from config import apiKey, mySteamName
@@ -55,7 +57,15 @@ def display(game_data):
             in_groups = in_groups[:-2]
         else:
             in_groups = ""
-        print(f"{BOLD}{game["name"]}:{RESET} {game["playtime_forever"]} mins playtime, " + rating + in_groups)
+        if len(game["tags"]) > 0:
+            tags = ", tags: "
+            for item in game['tags']:
+                tags += item + ', '
+            tags = tags[:-2]
+        else:
+            tags = ""
+        print(f"{BOLD}{game["name"]}:{RESET} {game["playtime_forever"]} mins playtime, " + rating +
+              in_groups + tags)
 
 def write():
     if not games:
@@ -99,6 +109,7 @@ def initialize(game_data):
     for game in game_data:
         game["rating"] = -1
         game["groups"] = []
+        game['tags'] = []
 
 def rate(game_data, game_to_rate, rating):
     for game in game_data:
@@ -160,15 +171,61 @@ def add_game_to_group(game_data, game_name, group):
 def print_members_of_group(group_name):
     print("Members of " + group_name + ":")
     for item in groups[group_name]:
-        print(item)
+        for thing in item:
+            print(thing)
 
+
+def get_player_achievements(app_id, api_key, steam_id):
+    url = "https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/"
+    params = {
+        "key": api_key,
+        "steamid": steam_id,
+        "appid": app_id
+    }
+    response = requests.get(url, params=params)
+
+    if response.status_code != 200:
+        return None
+
+    data = response.json()
+    playerstats = data.get("playerstats", {})
+
+    if not playerstats.get("success"):
+        return None
+
+    return playerstats.get("achievements", [])
+
+def update_tags(game_data, api_key, steam_id):
+    index = 0;
+    for game in game_data:
+        print("Updating tags for " + game["name"] + " (" + str(round(index * 100 / len(game_data),2))+"%)")
+        index+=1
+        if game["playtime_forever"] == 0:
+            game['tags'].append("unplayed")
+        app_id = game["appid"]
+        achievements = get_player_achievements(app_id, api_key, steam_id)
+
+        if achievements is None:
+            # no achievements for this game, skip
+            time.sleep(0.1)  # still rate limit to be safe
+            continue
+
+        total = len(achievements)
+        unlocked = sum(1 for a in achievements if a["achieved"] == 1)
+
+        if 0 < total == unlocked:
+            if "100%" not in game["tags"]:
+                game["tags"].append("100%")
+
+        time.sleep(0.05)  # avoid hitting Steam's rate limit (~2 req/sec)
+    print("Updated all tags")
 
 games = []
 groups = {}
 BOLD = "\033[1m"
 RESET = "\033[0m"
 mySteamId = get_id_from_name(mySteamName)
-print("SteamManager v0.1\nType 'help' for a list of commands")
+print("SteamManager v0.2.1\nType 'help' for a list of commands")
 if mySteamId is None:
    print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
 if os.path.exists("games.json"):
@@ -193,6 +250,8 @@ while True:
               ">rateAll: goes through all games in local memory and asks for a rating\n"+
               ">group: allows you to create/delete/edit groups\n" +
               ">help: prints a list of commands\n"+
+              ">updateTags: updates all of the tags ('played,' 'unplayed,' '100%' from Steam data." +
+              " Warning: due to Steam requests throttling, this could take a while \n"
               ">quit: quits the program")
     elif command.lower() == "getdatafromsteam":
         games = get_data()
@@ -202,6 +261,8 @@ while True:
         display(games)
     elif command.lower() == "getdatafromconfig":
         get_data_from_config(games)
+    elif command.lower() == "updatetags":
+        update_tags(games, apiKey, mySteamId)
     elif command.lower() == "remove":
         removeWhat = input("Type the name of the game to remove: ")
         if not find(games, removeWhat):
