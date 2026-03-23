@@ -12,7 +12,7 @@ RESET = "\033[0m"
 games = []
 groups = {}
 steam_id = get_id_from_name(steam_name)
-print("SteamManager v0.3.1\nType 'help' for a list of commands")
+print("SteamManager v0.3.2\nType 'help' for a list of commands")
 if steam_id is None:
    print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
 if os.path.exists("games.json"):
@@ -31,7 +31,7 @@ while True:
               ">remove: remove a game\n"
               ">edit: edit a game's name, playtime, or notes\n"
               ">rate: rate a game (or all at once)\n"
-              ">tags: update tags from Steam (playtime, 100%)\n"
+              ">tags: update/configure tags\n"
               ">group: create/delete/edit/print groups\n"
               ">help: show this list\n"
               ">quit: exit the program")
@@ -56,8 +56,34 @@ while True:
 
 
     elif command.lower() == "tags":
-        update_tags(games, api_key, steam_id)
-
+        do_what = input("Do you want to update all tags from steam data (warning: can take a while), "
+                        +"add a tag to games, "
+                        +"or remove tags? Type 'update', 'add', or 'remove: ")
+        if do_what.lower() == "update":
+            update_tags(games, api_key, steam_id)
+        elif do_what.lower() == "add":
+            what_game = input("What game would you like to add a tag to? ")
+            tag_name = input("What tag would you like to add to it? ")
+            add_tag(games,what_game,tag_name)
+        elif do_what.lower() == "remove":
+            remove_how = input("Do you want to clear a game of all its tags, clear a tag from all games, "
+                               +"or remove a specific tag from a specific game? " +
+                                "Type 'game', 'tag', or 'specific': ")
+            if remove_how.lower() == "game":
+                what_game = input("What game would you like to clear all the tags from? ")
+                clear_tags(games,what_game)
+            elif remove_how.lower() == "tag":
+                what_tag = input("What tag would you like to clear from all games? ")
+                delete_tag(games,what_tag)
+            elif remove_how.lower() == "specific":
+                what_game = input("What game would you like to clear a tag from? ")
+                print_tags(games,what_game)
+                what_tag = input("What tag would you like to remove from "+what_game+"? ")
+                remove_tag_from_game(games,what_game,what_tag)
+            else:
+                print("Sorry, that's not a recognized command")
+        else:
+            print("Sorry, that's not a recognized command")
 
     elif command.lower() == "remove":
         removeWhat = input("Type the name of the game to remove: ")
