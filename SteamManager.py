@@ -12,7 +12,7 @@ RESET = "\033[0m"
 games = []
 groups = {}
 steam_id = get_id_from_name(steam_name)
-print("SteamManager v0.3.4\nType 'help' for a list of commands")
+print("SteamManager v0.3.5\nType 'help' for a list of commands")
 if steam_id is None:
    print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
 if os.path.exists("games.json"):
@@ -27,6 +27,7 @@ while True:
               ">load: load games from 'steam' or 'file'\n"
               ">save: save current data to file\n"
               ">display: print all games\n"
+               ">game: print all data related to a specific game\n"
               ">add: add a game (prompts for playtime, rating, notes)\n"
               ">remove: remove a game\n"
               ">edit: edit a game's name, playtime, or notes\n"
@@ -54,10 +55,13 @@ while True:
     elif command.lower() == "display":
         display(games)
 
+    elif command.lower() == "game":
+        what_game = input("What game would you like to display data related to? ")
+        display_game(games,what_game)
 
     elif command.lower() == "tags":
         do_what = input("Do you want to update all tags from steam data (warning: can take a while), "
-                        +"add a tag to games, remove tags from games, or print certain games with certain tags?"
+                        +"add a tag to games, remove tags from games, \nor print certain games with certain tags?"
                         +" Type 'update', 'add', 'remove', or 'print': ")
         if do_what.lower() == "update":
             update_tags(games, api_key, steam_id)

@@ -1,5 +1,5 @@
 import time
-from steam_api import get_player_achievements
+from steam_api import get_player_achievements, get_review_data
 
 def update_tags(game_data, api_key, steam_id):
     index = 0;
@@ -10,7 +10,8 @@ def update_tags(game_data, api_key, steam_id):
             game['tags'].append("unplayed")
         app_id = game["appid"]
         achievements = get_player_achievements(app_id, api_key, steam_id)
-
+        reviews = get_review_data(app_id)
+        game['tags'].append("" + reviews["score_desc"] + " (" + str(reviews['positive_pct'])+"%)")
         if achievements is None or app_id is None:
             # no achievements for this game, skip
             time.sleep(0.1)  # still rate limit to be safe

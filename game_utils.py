@@ -3,27 +3,36 @@ RESET = "\033[0m"
 
 def display(game_data):
     for game in game_data:
-        if game["rating"] == -1:
-            rating = "unrated"
-        else:
-            rating = f"rated {game["rating"]} out of 10"
-        if len(game["groups"]) > 0:
-            in_groups = ", in group(s) "
-            for item in game["groups"]:
-                in_groups += item + ", "
-            in_groups = in_groups[:-2]
-        else:
-            in_groups = ""
-        if len(game["tags"]) > 0:
-            tags = ", tags: "
-            for item in game['tags']:
-                tags += item + ', '
-            tags = tags[:-2]
-        else:
-            tags = ""
-        notes = ", notes: " + game['notes']
-        print(f"{BOLD}{game["name"]}:{RESET} {game["playtime_forever"]} mins playtime, " + rating +
-              in_groups + tags + notes)
+        display_game_knowing_id(game_data,game)
+
+def display_game(game_data, game_name):
+    for potential_game in game_data:
+        if potential_game["name"] != game_name:
+            continue
+        display_game_knowing_id(game_data,potential_game)
+
+def display_game_knowing_id(game_data, game):
+    if game["rating"] == -1:
+        rating = "unrated"
+    else:
+        rating = f"rated {game["rating"]} out of 10"
+    if len(game["groups"]) > 0:
+        in_groups = ", in group(s) "
+        for item in game["groups"]:
+            in_groups += item + ", "
+        in_groups = in_groups[:-2]
+    else:
+        in_groups = ""
+    if len(game["tags"]) > 0:
+        tags = ", tags: "
+        for item in game['tags']:
+            tags += item + ', '
+        tags = tags[:-2]
+    else:
+        tags = ""
+    notes = ", notes: " + game['notes']
+    print(f"{BOLD}{game["name"]}:{RESET} {game["playtime_forever"]} mins playtime, " + rating +
+          in_groups + tags + notes)
 
 def add(game_data, name, playtime, rating=-1, notes=""):
     game_data.append({"name": name, "playtime_forever": playtime, "rating": rating,
