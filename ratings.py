@@ -20,7 +20,7 @@ def rate_all(game_data, ignore_already_rated = True):
         except ValueError:
             print("Sorry, that's not a number. We'll move on but you can rate again later with the 'rate' command")
 
-def print_by_rating(game_data, min_rating = 0):
+def sort_by_rating(game_data, min_rating = 0, print_ratings = True):
     ratings = {10: [], 8: [], 6: [], 4: [], 2: [], 0: [], -1: []}
     for game in game_data:
         if game["rating"] >= 10:
@@ -37,9 +37,15 @@ def print_by_rating(game_data, min_rating = 0):
             ratings[0].append(game)
         else:
             ratings[-1].append(game)
-    for rating in ratings:
-        print("Games with rating greater than or equal to " + str(rating) + "/10:")
-        for game in ratings[rating]:
-            if game['rating'] < min_rating:
-                return
-            print(f"-{game['name']}: {game['rating']}")
+    time_to_break = False
+    if print_ratings:
+        for rating in ratings:
+            print("Games with rating greater than or equal to " + str(rating) + "/10:")
+            for game in ratings[rating]:
+                if game['rating'] < min_rating:
+                    time_to_break = True
+                    break
+                print(f"-{game['name']}: {game['rating']}")
+            if time_to_break:
+                break
+    return ratings

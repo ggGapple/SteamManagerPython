@@ -6,6 +6,7 @@ from game_utils import *
 from notes import *
 from ratings import *
 from storage import *
+from recommendations import *
 BOLD = "\033[1m"
 RESET = "\033[0m"
 
@@ -34,6 +35,7 @@ while True:
               ">rate: rate a game (or all at once)\n"
               ">tags: update/configure tags\n"
               ">group: create/delete/edit/print groups\n"
+              ">recommend: gives you a game recommendation based on options\n"
               ">help: show this list\n"
               ">quit: exit the program")
 
@@ -58,6 +60,68 @@ while True:
     elif command.lower() == "game":
         what_game = input("What game would you like to display data related to? ")
         display_game(games,what_game)
+
+    elif command.lower() == "recommend":
+        recommend_how = input("How would you like a game recommended? Randomly, by rating, by tag, by group, "
+                              "or with multiple specifications? Type 'random', 'rating', 'tag', 'group', "
+                              "or 'multiple': ")
+        if recommend_how.lower() == "random":
+            print("Here's a random recommendation: "+recommend_random(games)["name"])
+        elif recommend_how.lower() == "rating":
+            min_rating = input("Type a minimum rating (or -1 for no minimum): ")
+            try:
+                min_rating = float(min_rating)
+            except ValueError:
+                print("Sorry, that's not a valid number")
+                continue
+            max_rating = input("Type a maximum rating (or -1 for no maximum): ")
+            try:
+                max_rating = float(max_rating)
+            except ValueError:
+                print("Sorry, that's not a valid number")
+                continue
+            if max_rating == -1 and min_rating != -1:
+                print("Here's a random recommendation above the rating " + str(min_rating)+": "
+                      +recommend(games,rating_min = min_rating)["name"])
+            elif max_rating != -1 and min_rating != -1:
+                print("Here's a random recommendation above the rating " + str(min_rating) + " and below "
+                    "the rating " + str(max_rating)+": "
+                      + recommend(games, rating_min=min_rating,rating_max = max_rating)["name"])
+            elif min_rating == -1 and max_rating != -1:
+                print("Here's a random recommendation below the rating " + str(max_rating)+": "
+                      +recommend(games,rating_max = max_rating)["name"])
+            else:
+                print("Sorry, I can't recommend a game by rating with no minimum and maximum parameters")
+        elif recommend_how.lower() == "tag":
+            what_tag = input("What tag do you want the game to have? ")
+            print("Here's a random recommendation with the " + what_tag + " tag: " + recommend(games,
+                                                                                               tag=what_tag)["name"])
+        elif recommend_how.lower() == "group":
+            what_group = input("What group do you want the game to have? ")
+            print("Here's a random recommendation in the " + what_group + " group: " + recommend(games,
+                                                                                               group=what_group)["name"])
+        elif recommend_how.lower() == "multiple":
+            min_rating = input("Type a minimum rating or -1 to not consider minimum rating: ")
+            try:
+                min_rating = float(min_rating)
+            except ValueError:
+                print("Sorry, that's not a valid number")
+                continue
+            max_rating = input("Type a maximum rating or -1 to not consider maximum rating: ")
+            try:
+                max_rating = float(max_rating)
+            except ValueError:
+                print("Sorry, that's not a valid number")
+                continue
+            what_tag = input("Type a tag name or -1 to not consider tag: ")
+            what_tag = None if what_tag == "-1" else what_tag
+            what_group = input("Type a group name or -1 to not consider group: ")
+            what_group = None if what_group == "-1" else what_group
+            print("Here's a random game based on those specifications: " + recommend(games,rating_min=min_rating,
+                    rating_max = max_rating,tag = what_tag, group = what_group)["name"])
+        else:
+            print("Sorry, that's not a recognized command")
+
 
     elif command.lower() == "tags":
         do_what = input("Do you want to update all tags from steam data (warning: can take a while), "
