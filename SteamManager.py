@@ -12,10 +12,12 @@ RESET = "\033[0m"
 
 games = []
 groups = {}
-steam_id = get_id_from_name(steam_name)
+steam_id = get_id_from_name(steam_name) if steam_name else None
 print("SteamManager v0.3.5\nType 'help' for a list of commands")
 if steam_id is None:
-   print("\nWarning: no Steam ID was assigned. Check config.json or make one with 'config' command")
+   print("Warning: no Steam ID was assigned. Check config.json or make one with 'config' command")
+if api_key is None:
+    print("Warning: no api key was assigned. Check config.json or make one with 'config' command")
 if os.path.exists("games.json"):
     games, groups = load_from_file()
 else:
