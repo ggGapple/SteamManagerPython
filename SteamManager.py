@@ -284,9 +284,9 @@ while True:
                                "or 'n' to show games of all ratings: ")
             try:
                 min_rating = float(min_rating)
-                print_by_rating(games, min_rating)
+                sort_by_rating(games, min_rating)
             except ValueError:
-                print_by_rating(games)
+                sort_by_rating(games)
         else:
             print("Sorry, that's not a recognized command")
 

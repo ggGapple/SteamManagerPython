@@ -40,8 +40,9 @@ def sort_by_rating(game_data, min_rating = 0, print_ratings = True):
     time_to_break = False
     if print_ratings:
         for rating in ratings:
+            sorted_ratings = sorted(ratings[rating], key = lambda i: i["rating"], reverse = True)
             print("Games with rating greater than or equal to " + str(rating) + "/10:")
-            for game in ratings[rating]:
+            for game in sorted_ratings:
                 if game['rating'] < min_rating:
                     time_to_break = True
                     break
